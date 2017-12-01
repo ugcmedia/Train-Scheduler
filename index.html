@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+        content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Train Schedule</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/css/bootstrap.min.css"
+        integrity="sha384-rwoIResjU2yc3z8GV/NPeZWAv56rSmLldC3R/AZzGRnGxQQKnKkoFVhFQhNUwEyJ" crossorigin="anonymous">
+</head>
+<body>
+<div class="container mb-4 mt">
+  <div class="jumbotron">
+    <h1>Train City</h1>
+  </div>
+  <div class="card">
+    <h3 class="card-header">Live Schedule</h3>
+    <div class="card-block">
+      <table class="table table-hover">
+        <thead>
+        <tr>
+          <th>Train Name</th>
+          <th>Destination</th>
+          <th>frequency(min)</th>
+          <th>Next Arrival</th>
+          <th>Min Away</th>
+        </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<div class="container mb-5">
+  <div class="card">
+    <h3 class="card-header">Add Train</h3>
+    <div class="card-block">
+      <form>
+        <div class="flex-column">
+          <div class="form-group col ml-auto mr-auto">
+            <label>
+              <bold>Train Name</bold>
+            </label>
+            <input type="text" class="form-control" id="trainName">
+          </div>
+          <div class="form-group col ml-auto mr-auto">
+            <label>Destination</label>
+            <input type="text" class="form-control" id="destination">
+          </div>
+          <div class="form-group col ml-auto mr-auto">
+            <label>First Train(military time)</label>
+            <input type="text" class="form-control" id="firstTrain">
+          </div>
+          <div class="form-group col ml-auto mr-auto">
+            <label>Frequency(min)</label>
+            <input type="text" class="form-control" id="frequency">
+          </div>
+          <div class="form-group col ml-auto mr-auto">
+            <button type="submit" class="btn btn-primary" id="submit">Submit</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script src="https://code.jquery.com/jquery-3.1.1.slim.min.js"
+        integrity="sha384-A7FZj7v+d/sdmMqp/nOQwliLvUsJfDHW+k9Omg/a/EheAdgtzNs3hpfag6Ed950n"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tether/1.4.0/js/tether.min.js"
+        integrity="sha384-DztdAPBWPRXSA/3eYEEUWrWCy7G5KFbe8fFjk5JAIxUYHKkDx6Qin1DkWx51bBrb"
+        crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.6/js/bootstrap.min.js"
+        integrity="sha384-vBWWzlZJ8ea9aCX4pEW3rVHjgjt7zpkNpZk+02D9phzyeVkE+jo0ieGizqPLForn"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/momentjs/2.12.0/moment.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/4.1.5/firebase.js"></script>
+<script>
+  var config = {
+    apiKey: "AIzaSyDmaZcFmTyz6QdqyCaIfhrxVNmy6tQcMgY",
+    authDomain: "train-schedule-cc46b.firebaseapp.com",
+    databaseURL: "https://train-schedule-cc46b.firebaseio.com",
+    projectId: "train-schedule-cc46b",
+    storageBucket: "train-schedule-cc46b.appspot.com",
+    messagingSenderId: "826606692421"
+  };
+  firebase.initializeApp(config);
+  var database = firebase.database();
+  $("#submit").on("click", (event) => {
+    event.preventDefault();
+    let name = $("#trainName").val().trim();
+    let destination = $("#destination").val().trim();
+    let firstTrain = $("#firstTrain").val().trim();
+    let frequency = $("#frequency").val().trim();
+    $(".form-group input").val('');
+    database.ref().push({
+      name: name,
+      destination: destination,
+      frequency: frequency,
+      initial: moment().startOf("day").add(moment.duration(firstTrain)).valueOf()
+    });
+  });
+  database.ref().on("child_added", (snapshot) => {
+    let snap = snapshot.val();
+    let myMoment = moment(snap['initial']);
+    let status = moment().valueOf() - myMoment.valueOf();
+    let amount = 0;
+    let time;
+    let tblRow =
+      `
+        <td>${snap['name']}</td>
+        <td>${snap['destination']}</td>
+        <td>${snap['frequency']}</td>
+    `;
+    amount = (parseInt(snap['frequency']) * 60000) - (status % (parseInt(snap['frequency'] * 60000)));
+    time = moment().add(moment.duration(amount));
+    let time1 =
+      `
+          <td>${time.calendar()}</td>
+          <td>  ${Math.ceil(amount / 60000)}</td>
+      `;
+    let time2 =
+      `
+          <td>${myMoment.calendar()}</td>
+          <td>  ${Math.ceil(myMoment.diff(moment(), "ms") / 60000)}</td>
+      `;
+    tblRow = status > 0 ? tblRow + time1 : tblRow + time2;
+    $(".table").append(`<tr>${tblRow}</tr>`);
+  }, (err) => {
+    console.log(err);
+  });
+</script>
+</body>
+</html>
