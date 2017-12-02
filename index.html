@@ -16,8 +16,8 @@
   </div>
   <div class="card">
     <h3 class="card-header">Live Schedule</h3>
-    <div class="card-block">
-      <table class="table table-hover">
+      <div class="card-block">
+        <table class="table table-hover">
         <thead>
         <tr>
           <th>Train Name</th>
@@ -79,12 +79,12 @@
 <script src="https://www.gstatic.com/firebasejs/4.1.5/firebase.js"></script>
 <script>
   var config = {
-    apiKey: "AIzaSyDmaZcFmTyz6QdqyCaIfhrxVNmy6tQcMgY",
-    authDomain: "train-schedule-cc46b.firebaseapp.com",
-    databaseURL: "https://train-schedule-cc46b.firebaseio.com",
-    projectId: "train-schedule-cc46b",
-    storageBucket: "train-schedule-cc46b.appspot.com",
-    messagingSenderId: "826606692421"
+    apiKey: "AIzaSyBvL0VAfd19wRMgqvPwXIQltJhoLOjSZ30",
+    authDomain: "train-scheduler-4a963.firebaseapp.com",
+    databaseURL: "https://train-scheduler-4a963.firebaseio.com",
+    projectId: "train-scheduler-4a963",
+    storageBucket: "train-scheduler-4a963.appspot.com",
+    messagingSenderId: "375423996364"
   };
   firebase.initializeApp(config);
   var database = firebase.database();
@@ -102,6 +102,7 @@
       initial: moment().startOf("day").add(moment.duration(firstTrain)).valueOf()
     });
   });
+  
   database.ref().on("child_added", (snapshot) => {
     let snap = snapshot.val();
     let myMoment = moment(snap['initial']);
